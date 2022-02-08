@@ -1,68 +1,114 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const ManagementApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+class ManagementApp extends StatelessWidget {
+  const ManagementApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.purple,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: HomeRoute(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
+class HomeRoute extends StatelessWidget {
+  const HomeRoute({Key? key}) : super(key: key);
 
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
+  Widget _buildCardItem() {
+    return Card(
+      child: Row(
+        children: [
+          Expanded(
+            child: ListTile(
+              leading: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                child: const CircleAvatar(
+                  backgroundColor: Colors.purple,
+                  child: Text('D'),
+                ),
+              ),
+              title: const Text('Hoang Minh Duc'),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Age: 21'),
+                  const Text('Salary: 0'),
+                ],
+              ),
+            ),
+          ),
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.edit),
+            iconSize: 14.0,
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: const Text('Home'),
       ),
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
+          children: [
+            InfoHeader(),
+            Expanded(
+              child: ListView.builder(
+                itemCount: 10,
+                itemBuilder: (_, index) => _buildCardItem(),
+              ),
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+}
+
+class HeaderCard extends StatelessWidget {
+  const HeaderCard({Key? key, required this.title, required this.content})
+      : super(key: key);
+
+  final String title;
+  final String content;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+        child: Card(
+      child: ListTile(
+        title: Text(title),
+        subtitle: Text(
+          content,
+          style: const TextStyle(fontSize: 18.0, height: 2.0),
+        ),
+      ),
+    ));
+  }
+}
+
+class InfoHeader extends StatelessWidget {
+  const InfoHeader({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        HeaderCard(title: 'Total', content: '0'),
+        HeaderCard(title: 'Oldest', content: 'Hoang Minh Duc'),
+      ],
     );
   }
 }
