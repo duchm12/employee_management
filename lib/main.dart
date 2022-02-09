@@ -1,4 +1,11 @@
+import 'package:employee_management/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
+
+import 'employee.dart';
+import 'employee_store.dart';
+
+final EmployeeStore employeeStore = EmployeeStore();
 
 void main() {
   runApp(const ManagementApp());
@@ -18,41 +25,49 @@ class ManagementApp extends StatelessWidget {
   }
 }
 
+String truncateLongString(String base, int limit) {
+  return base.length > limit
+      ? base.substring(0, limit - 1).toString() + '...'
+      : base;
+}
+
 class HomeRoute extends StatelessWidget {
   const HomeRoute({Key? key}) : super(key: key);
 
-  Widget _buildCardItem(BuildContext context) {
+  Widget _buildCardItem(BuildContext context, int index) {
+    var current = employeeStore.employeeList[index];
     return Card(
-      child: Row(
-        children: [
-          Expanded(
-            child: ListTile(
-              leading: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                child: const CircleAvatar(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: Row(
+          children: [
+            Expanded(
+              child: ListTile(
+                leading: CircleAvatar(
                   backgroundColor: Colors.purple,
-                  child: Text('D'),
+                  child: Text(current.lastName[0]),
+                ),
+                title: Text(truncateLongString(
+                    current.lastName + ' ' + current.firstName, 26)),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Age: ${current.age.toString()}'),
+                    Text('Salary: ${current.salary.toString()}'),
+                  ],
                 ),
               ),
-              title: const Text('Hoang Minh Duc'),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Age: 21'),
-                  const Text('Salary: 0'),
-                ],
-              ),
             ),
-          ),
-          IconButton(
-            onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => FormRoute()));
-            },
-            icon: const Icon(Icons.edit),
-            iconSize: 14.0,
-          ),
-        ],
+            IconButton(
+              onPressed: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => FormRoute()));
+              },
+              icon: const Icon(Icons.edit),
+              iconSize: 14.0,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -66,16 +81,37 @@ class HomeRoute extends StatelessWidget {
       body: Center(
         child: Column(
           children: [
-            InfoHeader(),
+            const InfoHeader(),
             Expanded(
-              child: ListView.builder(
-                itemCount: 10,
-                itemBuilder: (_, index) => _buildCardItem(context),
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 10.0),
+                child: Observer(
+                  builder: (_) => ListView.builder(
+                    itemCount: employeeStore.employeeList.length,
+                    itemBuilder: (_, index) => _buildCardItem(
+                      context,
+                      index,
+                    ),
+                  ),
+                ),
               ),
             ),
           ],
         ),
       ),
+      bottomNavigationBar: BottomAppBar(
+        color: Colors.purple,
+        child: Container(height: 40.0),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => FormRoute()));
+        },
+        backgroundColor: Colors.green,
+        child: const Icon(Icons.add),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
     );
   }
 }
@@ -109,17 +145,31 @@ class InfoHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const HeaderCard(title: 'Total', content: '0'),
-        const HeaderCard(title: 'Oldest', content: 'Hoang Minh Duc'),
+        Observer(
+            builder: (_) =>
+                HeaderCard(title: 'Total', content: employeeStore.totalSalary)),
+        Observer(
+            builder: (_) => HeaderCard(
+                title: 'Total', content: employeeStore.oldestEmployee)),
       ],
     );
   }
 }
 
-class FormRoute extends StatelessWidget {
-  FormRoute({Key? key}) : super(key: key);
+class FormRoute extends StatefulWidget {
+  const FormRoute({Key? key}) : super(key: key);
 
+  @override
+  State<FormRoute> createState() => _FormRouteState();
+}
+
+class _FormRouteState extends State<FormRoute> {
   final _formKey = GlobalKey<FormState>();
+
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
+  final _salaryController = TextEditingController();
+  final _birthdateController = TextEditingController();
 
   Future<void> _promptUserDeleteConfirmation(BuildContext context) async {
     return showDialog<void>(
@@ -168,19 +218,57 @@ class FormRoute extends StatelessWidget {
                   children: [
                     const SizedBox(height: 20.0),
                     TextFormField(
-                      decoration: InputDecoration(
-                          icon: const Icon(Icons.person), hintText: 'Name *'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'First name can not be empty';
+                        }
+                        return null;
+                      },
+                      controller: _firstNameController,
+                      decoration: const InputDecoration(
+                          icon: Icon(Icons.person), hintText: 'First name*'),
                     ),
                     const SizedBox(height: 20.0),
                     TextFormField(
-                      decoration: InputDecoration(
-                          icon: const Icon(Icons.contact_page),
-                          hintText: 'Age *'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Last name can not be empty';
+                        }
+                        return null;
+                      },
+                      controller: _lastNameController,
+                      decoration: const InputDecoration(
+                          icon: Icon(Icons.person), hintText: 'Last name*'),
                     ),
                     const SizedBox(height: 20.0),
                     TextFormField(
-                      decoration: InputDecoration(
-                          icon: const Icon(Icons.money), hintText: 'Salary *'),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Birth date can not be empty';
+                          }
+                          if (int.tryParse(value) == null) {
+                            return '$value is not an integer';
+                          }
+                          return null;
+                        },
+                        controller: _birthdateController,
+                        decoration: const InputDecoration(
+                            icon: Icon(Icons.contact_page),
+                            hintText: 'Birth year*')),
+                    const SizedBox(height: 20.0),
+                    TextFormField(
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Salary can not be empty';
+                        }
+                        if (int.tryParse(value) == null) {
+                          return '$value is not an integer';
+                        }
+                        return null;
+                      },
+                      controller: _salaryController,
+                      decoration: const InputDecoration(
+                          icon: Icon(Icons.money), hintText: 'Salary*'),
                     ),
                   ],
                 ),
@@ -192,7 +280,17 @@ class FormRoute extends StatelessWidget {
                     width: 200.0,
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.pop(context);
+                        if (_formKey.currentState!.validate()) {
+                          employeeStore.addEmployee(
+                            Employee(
+                                10,
+                                _firstNameController.text,
+                                _lastNameController.text,
+                                int.parse(_birthdateController.text),
+                                int.parse(_salaryController.text)),
+                          );
+                          Navigator.pop(context);
+                        }
                       },
                       child: const Text('ADD'),
                     ),
@@ -200,8 +298,14 @@ class FormRoute extends StatelessWidget {
                   SizedBox(
                     width: 200.0,
                     child: ElevatedButton(
-                      onPressed: () {
-                        _promptUserDeleteConfirmation(context);
+                      onPressed: () async {
+                        bool? result =
+                            await DialogUtils.displayDialogOKCallback(
+                                context, "confirm", "CHECK");
+                        if (result == true) {
+                          print(result);
+                        }
+                        // _promptUserDeleteConfirmation(context);
                       },
                       child: const Text('DELETE'),
                     ),
