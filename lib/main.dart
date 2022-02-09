@@ -21,7 +21,7 @@ class ManagementApp extends StatelessWidget {
 class HomeRoute extends StatelessWidget {
   const HomeRoute({Key? key}) : super(key: key);
 
-  Widget _buildCardItem() {
+  Widget _buildCardItem(BuildContext context) {
     return Card(
       child: Row(
         children: [
@@ -45,7 +45,10 @@ class HomeRoute extends StatelessWidget {
             ),
           ),
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => FormRoute()));
+            },
             icon: const Icon(Icons.edit),
             iconSize: 14.0,
           ),
@@ -67,7 +70,7 @@ class HomeRoute extends StatelessWidget {
             Expanded(
               child: ListView.builder(
                 itemCount: 10,
-                itemBuilder: (_, index) => _buildCardItem(),
+                itemBuilder: (_, index) => _buildCardItem(context),
               ),
             ),
           ],
@@ -106,9 +109,112 @@ class InfoHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        HeaderCard(title: 'Total', content: '0'),
-        HeaderCard(title: 'Oldest', content: 'Hoang Minh Duc'),
+        const HeaderCard(title: 'Total', content: '0'),
+        const HeaderCard(title: 'Oldest', content: 'Hoang Minh Duc'),
       ],
+    );
+  }
+}
+
+class FormRoute extends StatelessWidget {
+  FormRoute({Key? key}) : super(key: key);
+
+  final _formKey = GlobalKey<FormState>();
+
+  Future<void> _promptUserDeleteConfirmation(BuildContext context) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Text('Warning'),
+        content: Text('Do you want to delete this employee?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'Cancel'),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context, 'Accept');
+              Navigator.pop(context);
+            },
+            child: Text('Accept'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Edit employee'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ),
+      body: Form(
+        key: _formKey,
+        child: Center(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 20.0),
+                    TextFormField(
+                      decoration: InputDecoration(
+                          icon: const Icon(Icons.person), hintText: 'Name *'),
+                    ),
+                    const SizedBox(height: 20.0),
+                    TextFormField(
+                      decoration: InputDecoration(
+                          icon: const Icon(Icons.contact_page),
+                          hintText: 'Age *'),
+                    ),
+                    const SizedBox(height: 20.0),
+                    TextFormField(
+                      decoration: InputDecoration(
+                          icon: const Icon(Icons.money), hintText: 'Salary *'),
+                    ),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              Column(
+                children: [
+                  SizedBox(
+                    width: 200.0,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text('ADD'),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 200.0,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        _promptUserDeleteConfirmation(context);
+                      },
+                      child: const Text('DELETE'),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(
+                height: 10.0,
+              )
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
