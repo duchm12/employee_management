@@ -12,10 +12,14 @@ class AddRoute extends StatefulWidget {
 }
 
 class _AddRouteState extends State<AddRoute> {
-
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   void dispose() {
+    vm.disposeReaction();
     super.dispose();
   }
 
@@ -26,8 +30,7 @@ class _AddRouteState extends State<AddRoute> {
         title: const Text('Add employee'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () =>
-              Navigator.pop(context),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       body: Form(
@@ -42,28 +45,28 @@ class _AddRouteState extends State<AddRoute> {
                     const SizedBox(height: 20.0),
                     TextFormField(
                       validator: vm.validateName,
-                      controller: vm.fNameController,
+                      onChanged: vm.setFirstName,
                       decoration: const InputDecoration(
                           icon: Icon(Icons.person), hintText: 'First name*'),
                     ),
                     const SizedBox(height: 20.0),
                     TextFormField(
                       validator: vm.validateName,
-                      controller: vm.lNameController,
+                      onChanged: vm.setLastName,
                       decoration: const InputDecoration(
                           icon: Icon(Icons.person), hintText: 'Last name*'),
                     ),
                     const SizedBox(height: 20.0),
                     TextFormField(
                         validator: vm.validateNum,
-                        controller: vm.bDateController,
+                        onChanged: vm.setBirthDate,
                         decoration: const InputDecoration(
                             icon: Icon(Icons.contact_page),
                             hintText: 'Birth year*')),
                     const SizedBox(height: 20.0),
                     TextFormField(
                       validator: vm.validateNum,
-                      controller: vm.salaryController,
+                      onChanged: vm.setSalary,
                       decoration: const InputDecoration(
                           icon: Icon(Icons.money), hintText: 'Salary*'),
                     ),

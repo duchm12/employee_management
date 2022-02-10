@@ -2,31 +2,57 @@ import 'package:employee_management/src/helper/utils.dart';
 import 'package:employee_management/src/models/employee.dart';
 import 'package:employee_management/src/store/employee_store.dart';
 import 'package:flutter/material.dart';
+import 'package:mobx/mobx.dart';
 
-class EditViewModel {
+part 'edit_viewmodel.g.dart';
+
+class EditViewModel = _EditViewModel with _$EditViewModel;
+
+abstract class _EditViewModel with Store {
+  _EditViewModel() {
+    reactions.add(reaction((_) => _firstName, (e) {}));
+    reactions.add(reaction((_) => _lastName, (e) {}));
+    reactions.add(reaction((_) => _birthdate, (e) {}));
+    reactions.add(reaction((_) => _salary, (e) {}));
+  }
+
+  final List<ReactionDisposer> reactions = List.of([]);
+
   final EmployeeStore store = EmployeeStore();
 
   final _formKey = GlobalKey<FormState>();
 
   GlobalKey<FormState> get formKey => _formKey;
 
-  final _fNameController = TextEditingController();
+  @observable
+  String _firstName = '';
+  @observable
+  String _lastName = '';
+  @observable
+  String _birthdate = '';
+  @observable
+  String _salary = '';
 
-  TextEditingController get fNameController => _fNameController;
+  @action
+  void setFirstName(String value) => _firstName = value;
 
-  final _lNameController = TextEditingController();
+  @action
+  void setLastName(String value) => _lastName = value;
 
-  TextEditingController get lNameController => _lNameController;
+  @action
+  void setBirthDate(String value) => _birthdate = value;
 
-  final _bDateController = TextEditingController();
+  @action
+  void setSalary(String value) => _salary = value;
 
-  TextEditingController get bDateController => _bDateController;
-
-  final _salaryController = TextEditingController();
-
-  TextEditingController get salaryController => _salaryController;
-
-  List<Employee> get employeeList => store.employeeList;
+  void populateEmployeeDataOf(int id) {
+    int current = store.employeeList.indexWhere((e) => e.id == id);
+    Employee currentEmployee = store.employeeList[current];
+    setFirstName(currentEmployee.firstName);
+    setLastName(currentEmployee.lastName);
+    setBirthDate(currentEmployee.birthdate.toString());
+    setSalary(currentEmployee.salary.toString());
+  }
 
   String? validateName(String? name) {
     if (name == null || name.isEmpty) {
@@ -60,13 +86,21 @@ class EditViewModel {
   void validateAndSubmit(BuildContext context, int id) {
     if (_formKey.currentState!.validate()) {
       store.updateEmployee(
-        Employee(id, _fNameController.text,
-          _lNameController.text,
-          int.parse(_bDateController.text),
-          int.parse(_salaryController.text),
+        Employee(
+          id,
+          _firstName,
+          _lastName,
+          int.parse(_birthdate),
+          int.parse(_salary),
         ),
       );
       Navigator.pop(context);
+    }
+  }
+
+  void disposeReaction() {
+    for (var reaction in reactions) {
+      reaction();
     }
   }
 }

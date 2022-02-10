@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 final EditViewModel vm = EditViewModel();
 
 class EditRoute extends StatefulWidget {
-  EditRoute({required this.currentId});
+  const EditRoute({required this.currentId, Key? key}) : super(key: key);
 
   final int currentId;
 
@@ -13,9 +13,15 @@ class EditRoute extends StatefulWidget {
 }
 
 class _EditRouteState extends State<EditRoute> {
+  @override
+  void initState() {
+    vm.populateEmployeeDataOf(widget.currentId);
+    super.initState();
+  }
 
   @override
   void dispose() {
+    vm.disposeReaction();
     super.dispose();
   }
 
@@ -26,8 +32,7 @@ class _EditRouteState extends State<EditRoute> {
         title: const Text('Edit employee'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () =>
-            Navigator.pop(context),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       body: Form(
@@ -42,47 +47,55 @@ class _EditRouteState extends State<EditRoute> {
                     const SizedBox(height: 20.0),
                     TextFormField(
                       validator: vm.validateName,
-                      controller: vm.fNameController,
+                      onChanged: vm.setFirstName,
                       decoration: const InputDecoration(
                           icon: Icon(Icons.person), hintText: 'First name*'),
                     ),
                     const SizedBox(height: 20.0),
                     TextFormField(
                       validator: vm.validateName,
-                      controller: vm.lNameController,
+                      onChanged: vm.setLastName,
                       decoration: const InputDecoration(
                           icon: Icon(Icons.person), hintText: 'Last name*'),
                     ),
                     const SizedBox(height: 20.0),
                     TextFormField(
                         validator: vm.validateNum,
-                        controller: vm.bDateController,
+                        onChanged: vm.setBirthDate,
                         decoration: const InputDecoration(
                             icon: Icon(Icons.contact_page),
                             hintText: 'Birth year*')),
                     const SizedBox(height: 20.0),
                     TextFormField(
                       validator: vm.validateNum,
-                      controller: vm.salaryController,
+                      onChanged: vm.setSalary,
                       decoration: const InputDecoration(
                           icon: Icon(Icons.money), hintText: 'Salary*'),
                     ),
                   ],
                 ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  ElevatedButton(
-                    // This is bad!
-                    onPressed: () => vm.validateAndSubmit(context, widget.currentId),
-                    child: const Text('UPDATE'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () => vm.toggleDeleteDialog(context, widget.currentId), // I sense danger
-                    child: const Text('DELETE'),
-                  ),
-                ],
+              const SizedBox(
+                height: 20.0,
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    ElevatedButton(
+                      // This is bad!
+                      onPressed: () =>
+                          vm.validateAndSubmit(context, widget.currentId),
+                      child: const Text('UPDATE'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => vm.toggleDeleteDialog(
+                          context, widget.currentId), // I sense danger
+                      child: const Text('DELETE'),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(
                 height: 10.0,
