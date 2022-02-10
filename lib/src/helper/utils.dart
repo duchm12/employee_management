@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class DialogUtils {
+class Utils {
   static Future<bool?> displayDialogOKCallback(
       BuildContext context, String title, String message) async {
     return await showDialog<bool>(
@@ -43,5 +43,11 @@ class DialogUtils {
         );
       },
     );
+  }
+
+  static String truncateLongString(String base, int limit) {
+    return base.length > limit
+        ? base.substring(0, limit - 1).toString() + '...'
+        : base;
   }
 }

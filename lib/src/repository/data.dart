@@ -1,4 +1,4 @@
-import 'package:employee_management/employee.dart';
+import 'package:employee_management/src/models/employee.dart';
 
 final List<Employee> data = [
   Employee(1, 'Minh Duc', 'Hoang', 2000, 9000000),
